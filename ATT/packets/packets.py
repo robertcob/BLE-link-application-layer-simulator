@@ -1,17 +1,17 @@
 from utilities import errors
 import PDU
 
-
-
 # we will use packet formats suited to BLE 4.2 an below
 # changes may have been made since BLE 5.0
 
 class Packet:
-    def __init__(self, type, accessAddress, range, uuid):
-        self.access_address = accessAddress
+    def __init__(self, type, accessAddress, sender_address, range, uuid, packetInterval):
+        self.receiver_address = accessAddress
+        self.sender_address = sender_address
         self.type = type
         self.error = None
         self.connectionRange = range
+        self.packetInterval = packetInterval
         self.UUID = uuid
 
         
@@ -28,7 +28,6 @@ class Packet:
 class Advertising_Packet(Packet):
     def __init__(self, deviceName, cID, payload, length):
         super().__init__()
-        self.deviceName = deviceName
         self.PDU = PDU.ADV_PDU()
 
     

@@ -1,1 +1,0 @@
-### class declaration for ble peripheral device/slave
