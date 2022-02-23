@@ -2,9 +2,9 @@ from enum import Enum
 
 class Attribute:
     def __init__(self, UUID, handle, type, permissions, value):
-        self.UUID = UUID
+        self.pktUUID = UUID
         self.handle = handle
-        self.type = type = type
+        self.type = type 
         self.permissions = permissions 
         self.value = value
 
