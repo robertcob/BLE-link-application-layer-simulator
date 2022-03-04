@@ -16,6 +16,7 @@ peripheral sends its name, its uuid through, cutoff time attributes
 from random import seed, randint
 from threading import TIMEOUT_MAX
 from datetime import datetime
+from microbit_sim_p1 import DEBUG_ADVERT
 from utilities.rand import *
 from GAP.peripheral import Peripheral
 from GAP.central import Central
@@ -34,6 +35,8 @@ DEBUG_SENSOR = True #debug messages for the lowlevel sensors True or False
 TIMEOUT_MAX = 100 ### interval length for advertising timeout
 
 TRANSMISSION_Period = 1
+
+DEBUG_ADVERT = False #debug messages for the advertising packet
 
 ## our wireless channel class
 
@@ -66,7 +69,7 @@ class Node(object):
         self.posy = posy
         self.sqnr = 0
         env.process(self.main_p())
-        env.process(self.reveive_p())
+        env.process(self.receive_p())
         
     def send(self, ldst, msg_str):
         if DEBUG_RADIO:
@@ -80,6 +83,7 @@ class Node(object):
         ###distance =  math.sqrt(((msg[0].posx - self.posx) ** 2) + ((msg[0].posy - self.posy) ** 2))
         ### query based off of message type
         distance = 0
+        print("THIS IS A DEBUG", msg)
         if (msg[1] != self.channel):
             if (DEBUG_RADIO):
                 print(self.env.now,':', self.id,' X  (chan) ', msg[2], ' distance ', distance)
@@ -89,11 +93,26 @@ class Node(object):
         #     if (DEBUG_RADIO):
         #         print(self.env.now,':', self.id,' X  (range)', msg[2], ' distance ', distance)
         #     return None
+        
+        # elif msg[4][0] == "advertisingPkt":
+        #     if (DEBUG_RADIO):
+        #         print(self.env.now,':',"Packet Received!")
+        #         return(msg[4])
 
-        elif (randint(0,100) < RADIO_LOSSRATE) :
-            if (DEBUG_RADIO):
-                print(self.env.now,':', self.id,' X  (loss)', msg[2], ' distance ', distance)
-            return None
+        # elif (randint(0,100) < RADIO_LOSSRATE) :
+        #     if (DEBUG_RADIO):
+        #         print(self.env.now,':', self.id,' X  (loss)', msg[2], ' distance ', distance)
+        #     return None
+        
+        else:
+            
+            if ((msg[3] == 0) or (msg[3] == self.id)) :
+                if (DEBUG_RADIO):
+                    print(self.env.now,':',"Packet Received!")
+                return(msg[4])
+
+
+
 
 
 
@@ -126,57 +145,66 @@ class CentralNode(Node):
             else:
                 print("Central Node Waiting for advertising packet")
                 
-    def reveive_p(self):
+    def receive_p(self):
         while True:
             msg = yield self.media_in.get()
             msg_str = self.receive(msg)
+            print("DEBUG3 CENTRAL", msg)
+            print("DEBUG3 CENTRAL", msg_str)
+            print("DEBUG3 CENTRAL", type(msg_str))
             if msg_str:
                 print(self.env.now,':', self.id ,' central node, receiving ' , msg_str)
+                if msg_str[0] == 'advertisingPkt':
+                    if self.gapData.discoveryProcedure == 'limited':
+                        for deviceId in self.gapData.whitelist:
+                            if deviceId == msg_str['SRC']:
+                                self.connected == True
+                    else:
+                        self.connected = True
+                ## elif for other packet type...
+            else:
+                print("NO PACKETS RECEIVED AT CENTRAL NODE")
             
-            if msg_str['TYPE'] == 'advertisingPkt':
-                if self.gapData.discoveryProcedure == 'limited':
-                    for deviceId in self.gapData.whitelist:
-                        if deviceId == msg_str['SRC']:
-                            self.connected == True
-                else:
-                    self.connected = True
-            ### elif for other packet type...
-            
-class Peripheral(Node):
+class PeripheralNode(Node):
     def __init__(self, env, media, id, posx, posy):
         super().__init__(env, media, id, posx, posy)
+        self.join_node = 0
         print(self.env.now,':', self.id ,' Peripheral node, waiting for messages')
         self.gapData = Peripheral('Heart Moniter1', id, 'discoverable')
-        self.gapData.setConnectEstMode(False, True, False)
-        newPKT = self.gapData.createAdvertismentPackets(None)
-        self.gapData.addPackets(newPKT)
+        self.gapData.setConnectEstMode(nonConnectable=False, undirected=True, directed=False)
+        newAdVPKT = self.gapData.createAdvertismentPackets(self.id, self.join_node, self.sqnr, None)
+        self.gapData.addPackets(newAdVPKT)
         self.connected = False
-        self.join_node = 0
+        
         
     def main_p(self):
         while True:
-            yield self.env.timeout(randint(500, 1000))
-            if self.join_node == 0:
-                print(self.env.now,':', self.id ,' cannot send temperature reading, not joined a central yet')
-                self.gapData.ADVPacket.payload['SEQ'] = self.sqnr
+            if not self.connected:
+                # send advertising packet
+                yield self.env.timeout(randint(500, 1000))
+                self.channel = 7
+                self.sqnr += 1
+
+                # print(self.env.now,':', self.id ,' cannot send temperature reading, not joined a central yet')
                 ### construct message here and send........
                 msg = self.gapData.ADVPacket.payload
                 msg_json = json.dumps( msg ) 
-                print(self.env.now,':', self.id ,' sending ' , msg_json)
+                if (DEBUG_ADVERT):
+                    print(self.env.now,':', self.id ,' sending advertisingPkt ' , msg_json)
                 self.send(msg['LDST'], msg_json)
-            else:
-                self.sqnr += 1
-                print("DOING GATT TRANSFER NOW")
+                self.channel = self.id
+
     
     
     def receive_p(self):
         while True:
             msg = yield self.media_in.get()
+            
             msg_str = self.receive(msg)
             if msg_str:
                 print(self.env.now,':', self.id ,' receiving ' , msg_str)
                 msg_json = json.loads(msg_str)
-                if msg_str['TYPE'] == 'CONNECT':
+                if msg[0] == 'CONNECT':
                     self.connected = True
                     if self.join_node == 0:
                         print(self.env.now,':', self.id ,' advert received to join on channel ' , msg_json['CHANNEL'])
@@ -184,7 +212,8 @@ class Peripheral(Node):
                         self.channel = msg_json['CHANNEL']	
                     else:
                         print(self.env.now,':', self.id ,' advert received but already joined a sink ')
-
+                else:
+                    print("AWAITING CONNECTION REQUEST")
 # Start of main program
 # Initialisation of the random generator
 seed(datetime.now())
@@ -200,7 +229,7 @@ media = Media(env)
 # Nodes placed in a 2 dimensional space
 # Node(env, media, node_id, position_x, position_y)
 CentralNode(env,media,1,1,0)
-Peripheral(env,media,2,0,1)
+PeripheralNode(env,media,2,0,1)
 
 # Duration of the experiment
 env.run(until=6000)

@@ -4,15 +4,15 @@ from utilities import errors
 # changes may have been made since BLE 5.0
 
 class Packet:
-    def __init__(self, type, sender_address, uuid):
+    def __init__(self, type, id, join_Node, sqnr):
         self.error = None
         self.payload = {
             'TYPE': type,
-            'SRC': sender_address,
+            'SRC': id,
             'DST': 0,
-            'LSRC': uuid,
-            'LDST' : 0,
-            'SEQ' : None,
+            'LSRC': id,
+            'LDST' : join_Node,
+            'SEQ' : sqnr,
             'DATA': None
             }
         
