@@ -1,5 +1,3 @@
-from enum import Enum
-
 class Attribute:
     def __init__(self, UUID, handle, type, permissions, value):
         self.pktUUID = UUID
@@ -11,22 +9,25 @@ class Attribute:
     def setPermissions(self, permissions):
         self.permissions = permissions 
         return self.permissions
+    
+
+    # none = bool
+    # readable = bool
+    # writeable = bool
+    # readableAndWriteable = bool
+    # security = bool
+    def createPermissions(self, *sequential, **named):
+        enums = dict(zip(sequential, range(len(sequential))), **named)
+        return type('Enum', (), enums)
 
     def setType(self, newType):
         self.type = newType
         return self.type
 
-class permissions(Enum):
-    none = None
-    readable = None
-    writeable = None
-    readableAndWriteable = None
-    security = None
-
-class properties(Enum):
-    Broadcast = None
-    Read = None
-    WriteWithoutResponse = None
-    Write = None
-    Notify = None
-    Indicate = None
+# class properties(Enum):
+#     Broadcast = None
+#     Read = None
+#     WriteWithoutResponse = None
+#     Write = None
+#     Notify = None
+#     Indicate = None

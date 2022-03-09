@@ -1,8 +1,9 @@
 from ATT.attributes import Attribute
 
 class Service:
-    def __init__(self, UUID):
+    def __init__(self, UUID, handle):
         self.UUID =  UUID
+        self.handle = handle
         self.characteristics = []
     
     def createCharacteristic(self):
@@ -10,9 +11,9 @@ class Service:
         self.characteristics.append(currCharacteristic)
         
 class Characteristic:
-    def __init__(self, UUID, declarationAttribute):
+    def __init__(self, UUID, handle):
         self.UUID = UUID
-        self.declarationAttribute = declarationAttribute
+        self.handle = handle
         self.valueAttributes = []
         self.descriptors = []
     

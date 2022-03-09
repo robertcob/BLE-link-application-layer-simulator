@@ -10,13 +10,8 @@ class Peripheral:
         self.DataPackets = []
         self.centralDeviceData = None
 
-
-# def enum(*sequential, **named):
-#     enums = dict(zip(sequential, range(len(sequential))), **named)
-#     return type('Enum', (), enums)
     def setConnectEstMode(self, *sequential, **named):
         connectionMode = dict(zip(sequential, range(len(sequential))), **named)
-        print("DEBUG ",connectionMode)
         return type('Enum', (), connectionMode)
     
     def addPackets(self, newPacket):
@@ -37,13 +32,3 @@ class Peripheral:
     def setCentralDeviceData(self, data):
         self.centralDeviceData = data
         return
-        
-# class connectionEstablishModes(Enum):
-#     nonConnectable = None
-#     undirected = None
-#     directed = None
-
-# class centralDeviceData:
-#     def __init__(self,uuid, address):
-#         self.uuid = uuid
-#         self.address = address

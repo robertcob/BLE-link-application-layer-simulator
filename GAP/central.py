@@ -16,13 +16,14 @@ class Central:
         return
         
 
-
-# class peripheralData:
-#     def __init__(self, name, uuid, cutoffTime):
-#         self.name = name
-#         self.uuid = uuid
-#         self.cutoffTime = cutoffTime
+## this data is optional, class onyl instantiated if, GAT is used in GAT advert
+## other is a dictionary
+class peripheralData:
+    def __init__(self, name, uuid, other):
+        self.name = name
+        self.uuid = uuid
+        self.other = other
     
-#     def setCutoffTime(self, cutoffTime):
-#         self.cutoffTime = cutoffTime
-#         return
+    def setOtherData(self, newOther):
+        self.other = newOther
+    

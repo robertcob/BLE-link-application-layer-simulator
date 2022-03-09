@@ -165,6 +165,8 @@ class PeripheralNode(Node):
         print(self.env.now,':', self.id ,' Peripheral node, waiting for messages')
         self.gapData = Peripheral('Heart Moniter1', id, 'discoverable')
         self.gapData.setConnectEstMode(nonConnectable=False, undirected=True, directed=False)
+        self.numServices = 3
+        
         newAdVPKT = self.gapData.createAdvertismentPackets(self.id, self.join_node, self.sqnr, None)
         self.gapData.addPackets(newAdVPKT)
         self.connected = False
