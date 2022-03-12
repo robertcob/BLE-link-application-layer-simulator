@@ -1,24 +1,27 @@
+from ..utilities.enum import *
 class Attribute:
-    def __init__(self, UUID, handle, type, permissions, value):
+    def __init__(self, UUID, handle, value):
         self.pktUUID = UUID
         self.handle = handle
-        self.type = type 
-        self.permissions = permissions 
+        self.type = None
+        self.permissions = None 
         self.value = value
-
-    def setPermissions(self, permissions):
-        self.permissions = permissions 
-        return self.permissions
-    
 
     # none = bool
     # readable = bool
     # writeable = bool
     # readableAndWriteable = bool
     # security = bool
-    def createPermissions(self, *sequential, **named):
-        enums = dict(zip(sequential, range(len(sequential))), **named)
-        return type('Enum', (), enums)
+
+    
+    def createAttTypes(self, serviceDec, characterDec, characterVal, dccc):
+        attributeType = createEnum(serviceDec=serviceDec,characterDec=characterDec, 
+                                   characterVal=characterVal, dccc=dccc)
+        self.type = attributeType
+    
+    def createAttPerms(self, read, write, readAndWrite):
+        permissionType = createEnum(read=read, write=write, readAndWrite=readAndWrite)
+        self.permissions = permissionType
 
     def setType(self, newType):
         self.type = newType

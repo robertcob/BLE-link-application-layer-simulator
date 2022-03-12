@@ -7,7 +7,7 @@ from metadata import Characteristic
 from metadata import Service
 class Server:
     def __init__(self):
-        self.services = []
+        self.profile = None
     
     def createService(self, serviceDeclaration):
         curr_Service = Service(serviceDeclaration.UUID, serviceDeclaration.handle)
@@ -16,4 +16,6 @@ class Server:
     def createCharacteristic(self, characteristicDeclaration):
         curr_Characteristic = Characteristic(characteristicDeclaration.UUID, characteristicDeclaration.handle)
 
-    
+### define builder pattern for profile of GAT Server
+
+        

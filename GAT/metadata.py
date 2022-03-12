@@ -1,5 +1,6 @@
 from ATT.attributes import Attribute
-
+### Theses classes will be used on the GATT server side when conveying packets
+### and designing the real server model
 class Service:
     def __init__(self, UUID, handle):
         self.UUID =  UUID
