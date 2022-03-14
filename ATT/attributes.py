@@ -26,6 +26,9 @@ class Attribute:
     def setType(self, newType):
         self.type = newType
         return self.type
+    
+    def setValue(self, newValue):
+        self.value = newValue
 
 # class properties(Enum):
 #     Broadcast = None

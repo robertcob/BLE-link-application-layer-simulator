@@ -1,4 +1,3 @@
-from metadata import Service
 from metadata import Characteristic
 
 ### we listen for service delcarations
@@ -7,15 +6,43 @@ from metadata import Characteristic
 from metadata import Service
 class Server:
     def __init__(self):
-        self.profile = None
-    
-    def createService(self, serviceDeclaration):
-        curr_Service = Service(serviceDeclaration.UUID, serviceDeclaration.handle)
-        self.services.append(curr_Service)
-    
-    def createCharacteristic(self, characteristicDeclaration):
-        curr_Characteristic = Characteristic(characteristicDeclaration.UUID, characteristicDeclaration.handle)
+        self.profile = {}
 
-### define builder pattern for profile of GAT Server
+    def addService(self, service):
+        self.profile[service.uuid] = [service]
+        
+    def addCharacteristicToService(self, serviceUuid, characteristic):
+        self.profile[serviceUuid].append(characteristic)
+    
+    ### splitting identical functionality of addChar and addDesc
+    ### in case later on altered functionality needs to be implemented
+    ### when adding a descriptor to service...
+    def addDescriptorToService(self, serviceUuid, descriptor):
+        self.profile[serviceUuid].append(descriptor)
+        
+    def getServiceOrDesciptor(self, uuid):
+        values = self.profile.values()
+        for each in values:
+            for att in each:
+                if att.pktUUID == uuid:
+                    return att
+                
+            
+    def getCharDecAtt(self, uuid):
+        values = self.profile.values()
+        for each in values:
+            for att in each:
+                if att.pktUUID == uuid and att.type.characterDec == True:
+                    return att
+    
+    def getCharValAtt(self, uuid):
+        values = self.profile.values()
+        for each in values:
+            for att in each:
+                if att.pktUUID == uuid and att.type.characterVal == True:
+                    return att
+    
+
+            
 
         

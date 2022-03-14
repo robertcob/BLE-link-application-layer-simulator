@@ -20,6 +20,7 @@ from datetime import datetime
 from utilities.rand import *
 from GAP.peripheral import Peripheral
 from GAP.central import Central
+from ATT.packets.packets import Packet
 import simpy.rt
 # import math
 import json
@@ -122,16 +123,20 @@ class CentralNode(Node):
             print(self.env.now,':', self.id ,' central node, waiting for messages')
             if self.advertReqConn:
                 print("DEBUG 5: Connection packet being sent to Peripheral")
-                msg_json = {}
-                msg_json['TYPE'] = 'CONNECT'
-                msg_json['SRC']  = self.channel
-                msg_json['DST']  = 0 
-                msg_json['LSRC'] = self.advData['SRC']
-                msg_json['LDST'] = self.advData['SRC']
-                msg_json['SEQ']  = self.sqnr
-                msg_json['CHANNEL']  = self.advData['SRC']
-                msg_str = json.dumps( msg_json ) 
-                self.send(msg_json['LDST'],msg_str)
+                connectPkt = self.gapData.createResponsePacket('CONNECT', self.channel, self.advData['SRC'], self.sqnr,
+                                                               None, self.advData['DST'], self.advData['SRC'])
+                # msg_json = {}
+                # msg_json['TYPE'] = 'CONNECT'
+                # msg_json['SRC']  = self.channel
+                # msg_json['DST']  = 0 
+                # msg_json['LSRC'] = self.advData['SRC']
+                # msg_json['LDST'] = self.advData['SRC']
+                # msg_json['SEQ']  = self.sqnr
+                # msg_json['CHANNEL']  = self.advData['SRC']
+                payload = connectPkt.payload
+                msg_str = json.dumps(payload)
+                # msg_str = json.dumps( msg_json ) 
+                self.send(payload['LDST'],msg_str)
                 # switch to the communication channel
                 self.channel = self.id
             else:
@@ -187,6 +192,7 @@ class PeripheralNode(Node):
                 self.send(msg['LDST'], msg_json)
                 # self.channel = self.id
             else:
+                ### start sending ATT packets
                 print("TWO DEVICES NOW CONNNECTED")
 
     

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from ATT.attributes import Attribute
-from..utilities.rand import randomHeartRateValue
+from utilities.rand import randomHeartRateValue
 
 
 class Client:

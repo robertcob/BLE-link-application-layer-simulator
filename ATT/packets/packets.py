@@ -13,16 +13,17 @@ class Packet:
             'LSRC': id,
             'LDST' : join_Node,
             'SEQ' : sqnr,
-            'DATA': None
+            'DATA': None,
+            'CHANNEL': None
             }
         
-    def setType(self, packetType):
-        if (packetType == "advertisingPkt") or (packetType == "dataPkt") or (packetType == "extAdvertisingPkt"):
-            self.type = packetType
-        else:
-            print("invald packet type set")
-            self.error = errors.Error("packet name", "packet type", "invalid packet type provided", 1021)
-            return
+    # def setType(self, packetType):
+    #     if (packetType == "advertisingPkt") or (packetType == "dataPkt") or (packetType == "extAdvertisingPkt"):
+    #         self.type = packetType
+    #     else:
+    #         print("invald packet type set")
+    #         self.error = errors.Error("packet name", "packet type", "invalid packet type provided", 1021)
+    #         return
     
     def setData(self, data):
         self.payload['DATA'] = data

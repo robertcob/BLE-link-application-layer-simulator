@@ -1,4 +1,5 @@
 ### class details alongside general scanning role
+from ATT.packets.packets import Packet
 class Central:
     def __init__(self, name, address, discProcedure):
         self.name = name
@@ -14,6 +15,13 @@ class Central:
     def addPeripheralData(self, data):
         self.peripheralData = data
         return
+    
+    def createResponsePacket(self, type, id, join_Node, sqnr, data, channel):
+        curPKT = Packet(type, id, join_Node, sqnr)
+        curPKT.data = data
+        curPKT.channel = channel
+        return curPKT
+        
         
 
 ## this data is optional, class onyl instantiated if, GAT is used in GAT advert

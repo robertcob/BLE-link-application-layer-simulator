@@ -28,7 +28,3 @@ class Peripheral:
         else: 
             ADV_PKT = Packet("advertisingPkt", id, join_Node, sqnr)
         return ADV_PKT
-    
-    def setCentralDeviceData(self, data):
-        self.centralDeviceData = data
-        return
