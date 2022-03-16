@@ -24,7 +24,7 @@ class Central:
         
         
 
-## this data is optional, class onyl instantiated if, GAT is used in GAT advert
+## this data is optional, class only instantiated if, GAT is used in GAT advert
 ## other is a dictionary
 class peripheralData:
     def __init__(self, name, uuid, other):

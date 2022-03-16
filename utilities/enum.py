@@ -1,3 +1,3 @@
-def createEnum(self, *sequential, **named):
+def createEnum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
     return type('Enum', (), enums)

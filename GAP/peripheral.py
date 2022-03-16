@@ -28,3 +28,10 @@ class Peripheral:
         else: 
             ADV_PKT = Packet("advertisingPkt", id, join_Node, sqnr)
         return ADV_PKT
+    
+    def createDataPkt(self, type, id, join_Node, sqnr, data, channel):
+        curPKT = Packet(type, id, join_Node, sqnr)
+        curPKT.setData(data)
+        curPKT.setChannel(channel)
+        curPKT.setLSRC(2)
+        return curPKT

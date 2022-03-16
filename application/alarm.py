@@ -10,8 +10,10 @@ class Alarm:
         statusStr=''
         if self.alarmStatus:
             statusStr = "On"
+            return "oh no! looks like your bpm is too high, alarm is now {}".format(statusStr)
         else:
             statusStr = "Off"
+            return "Dont worry! your not dead yet, alarm is now {}".format(statusStr)
         
-        return "Alarm status has been changed, alarm is now {}".format(statusStr)
+
              

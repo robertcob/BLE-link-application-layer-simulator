@@ -1,13 +1,14 @@
 from abc import abstractmethod
+from re import T
 from ATT.attributes import Attribute
 from utilities.rand import randomHeartRateValue
+import json
 
 
 class Client:
     def __init__(self, name, UUID):
         self.name = name
         self.uuid = UUID
-        self.gattPackets = None
         '''
         this is a basic metric method for creating handles
         the first service will be in the range of 0x00A -> 0x0013
@@ -15,7 +16,7 @@ class Client:
         
         we will define as decimal but when adding to any GATT/GAP object we will str(hex(DECIMAL_HANDLE))
         '''
-        self.handleStarter = 10
+    
     def createServiceDecAtt(self, handle, uuid, val):
         serviceDec = Attribute(uuid, handle, val)
         serviceDec.createAttTypes(True, False, False, False)
@@ -39,6 +40,14 @@ class Client:
         dccc.createAttTypes(False, False, False, True)
         dccc.createAttPerms(False, False, True)
         return dccc    
+    
+    
+    ### simpy transport requires json serialization
+    def packageATT(self, attPkt):
+        attPkt.getType()
+        attPkt.getPerm()
+        return attPkt.__dict__
+        
     
     @abstractmethod
     def ProfileDirector(self):

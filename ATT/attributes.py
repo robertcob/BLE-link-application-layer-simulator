@@ -1,4 +1,4 @@
-from ..utilities.enum import *
+from utilities.enum import *
 class Attribute:
     def __init__(self, UUID, handle, value):
         self.pktUUID = UUID
@@ -29,11 +29,22 @@ class Attribute:
     
     def setValue(self, newValue):
         self.value = newValue
-
-# class properties(Enum):
-#     Broadcast = None
-#     Read = None
-#     WriteWithoutResponse = None
-#     Write = None
-#     Notify = None
-#     Indicate = None
+    
+    def getType(self):
+        
+        if self.type.serviceDec:
+            self.type = 'serviceDec'
+        elif self.type.characterDec:
+            self.type =  'characterDec'
+        elif self.type.characterVal:
+            self.type =  'characterVal'
+        else:
+            self.type =  'dccc'  
+    
+    def getPerm(self):
+        if self.permissions.read:
+            self.permissions =  'read'
+        elif self.permissions.write:
+            self.permissions =  'write'
+        else:
+            self.permissions = 'readAndWrite'  
