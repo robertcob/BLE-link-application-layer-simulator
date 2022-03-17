@@ -6,14 +6,7 @@ class Attribute:
         self.type = None
         self.permissions = None 
         self.value = value
-
-    # none = bool
-    # readable = bool
-    # writeable = bool
-    # readableAndWriteable = bool
-    # security = bool
-
-    
+          
     def createAttTypes(self, serviceDec, characterDec, characterVal, dccc):
         attributeType = createEnum(serviceDec=serviceDec,characterDec=characterDec, 
                                    characterVal=characterVal, dccc=dccc)
@@ -29,6 +22,9 @@ class Attribute:
     
     def setValue(self, newValue):
         self.value = newValue
+    
+    def setPerm(self, newPerm):
+        self.permissions = newPerm
     
     def getType(self):
         

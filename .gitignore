@@ -1,3 +1,8 @@
 venv
 microbit_sim.py
 microbit_sim_p1.py
+application/__pycache__
+GAP/__pycache__
+GAT/__pycache__
+ATT/__pycache__
+utilities/__pycache__

@@ -48,25 +48,27 @@ class Server:
         self.profile[serviceUuid].append(descriptor)
         
     def getServiceOrDesciptor(self, uuid):
-        values = self.profile.values()
+        values = list(self.profile.values())
         for each in values:
             for att in each:
-                if att.pktUUID == uuid:
-                    return att
+                curAtt = att
+                if att.handle == uuid:
+                    return curAtt
                 
             
     def getCharDecAtt(self, uuid):
-        values = self.profile.values()
+        values = list(self.profile.values())
         for each in values:
             for att in each:
-                if att.pktUUID == uuid and att.type.characterDec == True:
-                    return att
+                curAtt = att
+                if att.handle == uuid and att.type.characterDec == True:
+                    return curAtt
     
     def getCharValAtt(self, uuid):
-        values = self.profile.values()
+        values = list(self.profile.values())
         for each in values:
             for att in each:
-                if att.pktUUID == uuid and att.type.characterVal == True:
+                if att.handle == uuid and att.type.characterVal == True:
                     return att
     
 
