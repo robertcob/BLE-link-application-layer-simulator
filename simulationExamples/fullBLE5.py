@@ -111,12 +111,7 @@ class CentralNode(Node):
                 print(self.env.now,':', self.id ,' central node, receiving ' , msg_str, "received by central!")
                 if msg_str['TYPE'] == 'advertisingPkt':
                     self.advData = msg_str
-                    if self.gapData.discoveryProcedure == 'limited':
-                        for deviceId in self.gapData.whitelist:
-                            if deviceId == msg_str['SRC']:
-                                self.advertReqConn == True
-                    else:
-                        self.advertReqConn = True
+                    self.advertReqConn = True
                 elif msg_str['TYPE'] == 'GATT':
                     self.advertReqConn = False
                     self.gattData.addToProfile(msg_str['DATA'])
@@ -206,8 +201,6 @@ class PeripheralNode(Node):
                     attPkt = self.gapData.createDataPkt('WRITE', self.id, self.join_node, 
                                                         self.sqnr, data, self.channel)
                     msg = attPkt.payload
-                    print("DEBUG ", msg)
-                    print(type(msg))
                     msg_json = json.dumps(msg)
                     self.send(msg['LDST'],msg_json) 
     
