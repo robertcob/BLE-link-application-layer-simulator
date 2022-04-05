@@ -171,14 +171,16 @@ sensorBaseConnection = canvas.create_line(160, 300, 380, 100, fill='grey', width
 ### base station alarm connection
 baseAlarmConnection = canvas.create_line(160, 300, 400, 300, fill='black', width=4, dash=(12, 1))
 
-### creating base station
-baseStation = create_circle(160, 300, 40, canvas)
+# ### creating alarm 
+alarm = PhotoImage(file="image-assets/alarm.png")
+# ### creating sensor
+sensor = PhotoImage(file="image-assets/sensor.png")
+# ### creating base station
+base_station = PhotoImage(file="image-assets/base-station.png")
+canvas.create_image(400, 300, image=alarm)
+canvas.create_image(380, 100, image=sensor )
+canvas.create_image(160, 300, image=base_station )
 
-### creating alarm station
-gui_Alarm = create_circle(400, 300, 25, canvas, fill="green")
-
-### creating sensor
-hrSensor = create_circle(380, 100, 30, canvas)
 
 def refresh():
     while True:
