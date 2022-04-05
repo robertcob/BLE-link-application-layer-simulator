@@ -27,7 +27,7 @@ import os
 ### GUI flag only use when working
 ### alongside GUI
 ### disable if not using GUI
-ENABLE_GUI = True
+ENABLE_GUI = False
 RADIO_CHANNEL	 = 37  # selected transmission channel
 DEBUG_RADIO  = True #debug messages for the lowlevel radio True or False
 TIMEOUT_MAX = 100 ### interval length for advertising timeout

@@ -1,4 +1,3 @@
-from operator import is_
 from tkinter import *
 from tkinter.font import *
 from guiExtensions.tk_extensions import ScrollableTV
@@ -211,19 +210,14 @@ def start():
     t1.start()
     t2.start()
 
-
 ### simulation control frame
 rootFrame= Frame(sideContentFrame)
 rootFrame.grid(row=2)
 topFrame = Frame(rootFrame, bg="grey", width=380, height=60)
 topFrame.grid(row=0)
-
-
 topInnerFrame1 = Frame(topFrame,  width=126, height=60)
 topInnerFrame1.grid(row=0, column=0)
-
 startbutton = Button(topInnerFrame1, text="Start", fg="black", bg="grey", command=start)
-
 startbutton.grid(padx=23, pady=5)
 
 root.mainloop()
