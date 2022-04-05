@@ -22,8 +22,7 @@ class Central:
         curPKT.channel = channel
         return curPKT
         
-        
-
+    
 ## this data is optional, class only instantiated if, GAT is used in GAT advert
 ## other is a dictionary
 class peripheralData:

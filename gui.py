@@ -1,6 +1,12 @@
+from operator import is_
 from tkinter import *
 from tkinter.font import *
 from guiExtensions.tk_extensions import ScrollableTV
+
+### imports for running simulation
+import csv
+import time
+import threading
 
 root = Tk()
 root.resizable(0, 0)
@@ -9,9 +15,14 @@ ff10=Font(family="Consolas", size=10)
 ff10b=Font(family="Consolas", size=10, weight=BOLD)
 
 
+CURRENT_SIMULATION = "random value"
+
 #### Attack Model Selection Menu...
 def initNoAttackSim():
-    print("creating sim of ble 5, no attacker")
+    global CURRENT_SIMULATION
+    #print("creating sim of ble 5, no attacker")
+    CURRENT_SIMULATION = "simulations/fullBLE5.csv"
+    print("executing {}".format(CURRENT_SIMULATION))
 
 def initFalseSensorAttackSim():
     print("creating false sensor attack simulation")
@@ -31,6 +42,7 @@ subMenu.add_cascade(label="Security Level 1", menu=sec1SubMenu)
 sec0SubMenu.add_command(label="no attacks", command=initNoAttackSim)
 sec0SubMenu.add_command(label="false sensor", command=initFalseSensorAttackSim)
 
+### importing image assets
 masterFrame =Frame(root)
 masterFrame.grid(row=0)
 
@@ -64,13 +76,20 @@ def drawNode(canvas, node):
     canvas.create_rectangle(x1, y1, x2, y2)
     return
 
+def create_circle(x, y, r, canvas, fill="#5ED0E9"): #center coordinates, radius
+    x0 = x - r
+    y0 = y - r
+    x1 = x + r
+    y1 = y + r
+    return canvas.create_oval(x0, y0, x1, y1, fill=fill)
+
 def drawGrid(canvas, grid):
     for row in grid:
         for node in row:
             drawNode(canvas, node)
     return
 canvas = Canvas(masterFrame, width=winW, height=winH, 
-                   borderwidth=0, highlightthickness=0, bg="white")
+                borderwidth=0, highlightthickness=0, bg="white")
 canvas.grid( row=0, column=0, sticky=EW)
 
 # init a scrollabletv for packet transfers...
@@ -128,49 +147,93 @@ sb2.configure(command=tv2.xview)
 grid = generatGrid(nrows, ncols)
 drawGrid(canvas, grid)
 
+### sensor base station connection
+sensorBaseConnection = canvas.create_line(160, 300, 380, 100, fill='grey', width=4, dash=(12, 1))
+
+### base station alarm connection
+baseAlarmConnection = canvas.create_line(160, 300, 400, 300, fill='black', width=4, dash=(12, 1))
+
+### creating base station
+baseStation = create_circle(160, 300, 40, canvas)
+
+### creating alarm station
+gui_Alarm = create_circle(400, 300, 25, canvas, fill="green")
+
+### creating sensor
+hrSensor = create_circle(380, 100, 30, canvas)
+
+def refresh():
+    while True:
+        root.update()
+        
+def runSim():
+    with open(CURRENT_SIMULATION, "r") as f:
+        reader = csv.reader(f)
+        prevDuration = 0.0
+        for i, line in enumerate(reader):
+            root.update()
+            time.sleep(float(line[0])-prevDuration)
+            prevDuration = float(line[0])
+            root.update()
+            if line[1] == "node_state":
+                tv2.insert("", END, values=(str(line[2]), str(line[3]), str(line[4])))
+                root.update()
+            else:
+                tv1.insert("", END, values=(str(line[2]), str(line[3]), str(line[4]), str(line[5])))
+                root.update()
+        tv2.insert("", END, values=("", "", "Simulation complete"))
+        tv1.insert("", END, values=("", "","","Simulation complete"))
 
 ### control menu button onclick methods
 def start():
-    pass
+    print("starting sim")
+    global t2
+    t1 = threading.Thread(target=refresh, args=[])
+    t2 = threading.Thread(target=runSim, args=[])
+    t1.start()
+    t2.start()
+    
+# def stop():
+#     t2._stop()
+# def reset():
+#     print("reset clicked!")
+#     tv1.delete(*tv1.get_children())
+#     tv2.delete(*tv2.get_children())
+#     return
 
-def stop():
-    pass
-
-def reset():
-    pass
 
 ### simulation control frame
-rootFrame= Frame(sideContentFrame, highlightbackground="#F6F5F5", highlightthickness=2)
+rootFrame= Frame(sideContentFrame)
 rootFrame.grid(row=2)
 topFrame = Frame(rootFrame, bg="grey", width=380, height=60)
-bottomframe = Frame(rootFrame, bg="grey", width= 380, height=60)
+# bottomframe = Frame(rootFrame, bg="grey", width= 380, height=60)
 topFrame.grid(row=0)
-bottomframe.grid(row=1, pady=26)
+# bottomframe.grid(row=1, pady=26)
 
 topInnerFrame1 = Frame(topFrame,  width=126, height=60)
-topInnerFrame2 = Frame(topFrame,  width=126, height=60)
-topInnerFrame3 = Frame(topFrame, width=126, height=60)
+# topInnerFrame2 = Frame(topFrame,  width=126, height=60)
+# topInnerFrame3 = Frame(topFrame, width=126, height=60)
 topInnerFrame1.grid(row=0, column=0)
-topInnerFrame2.grid(row=0, column=1)
-topInnerFrame3.grid(row=0,column=2)
+# topInnerFrame2.grid(row=0, column=1)
+# topInnerFrame3.grid(row=0,column=2)
 
-startbutton = Button(topInnerFrame1, text="Start", fg="black", bg="grey")
+startbutton = Button(topInnerFrame1, text="Start", fg="black", bg="grey", command=start)
 
 startbutton.grid(padx=23, pady=5)
 
-stopbutton = Button(topInnerFrame2, text="Stop", fg="black", bg="grey")
+# stopbutton = Button(topInnerFrame2, text="Stop", fg="black", bg="grey", command=stop)
 
-stopbutton.grid(padx=22, pady=5)
+# stopbutton.grid(padx=22, pady=5)
 
-resetButton = Button(topInnerFrame3, text="Reset", fg="black", bg="grey")
+# resetButton = Button(topInnerFrame3, text="Reset", fg="black", bg="grey", command=reset)
 
-resetButton.grid(padx=23, pady=5)
+# resetButton.grid(padx=23, pady=5)
 
-timeVar = StringVar()
-timeVar.set("0.00")
-timeLabel = Label(bottomframe, fg="black",  text= "Time:")
-vartimeLabel = Label(bottomframe, fg="black", textvariable=timeVar)
-timeLabel.grid(row= 0,column=0)
-vartimeLabel.grid(row=0, column=1)
+# timeVar = StringVar()
+# timeVar.set("0.00")
+# timeLabel = Label(bottomframe, fg="black",  text= "Time:", font="10")
+# vartimeLabel = Label(bottomframe, fg="black", textvariable=timeVar, font="10")
+# timeLabel.grid(row= 0,column=0)
+# vartimeLabel.grid(row=0, column=1)
 
 root.mainloop()

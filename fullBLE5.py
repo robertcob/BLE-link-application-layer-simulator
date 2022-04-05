@@ -5,10 +5,9 @@ Example shows:
 -> GATT data (hr value) being written to a profile attribute (with permissions)
 '''
 
+
 from random import seed, randint
-from threading import TIMEOUT_MAX
 from datetime import datetime
-from xmlrpc.client import Server
 from utilities.rand import *
 from GAP.peripheral import Peripheral
 from GAP.central import Central
@@ -19,14 +18,23 @@ from utilities.rand import randomHeartRateValue
 import json
 from application.alarm import Alarm
 
-RADIO_TXDISTANCE = 2  # transmissione range of nodes
+### simulation tracking imports
+import csv
+import time
+import shutil
+import os
+
+### GUI flag only use when working
+### alongside GUI
+### disable if not using GUI
+ENABLE_GUI = True
 RADIO_CHANNEL	 = 37  # selected transmission channel
-RADIO_LOSSRATE   = 0 # 10% packet loss rate
-DEBUG_RADIO  = False #debug messages for the lowlevel radio True or False
-DEBUG_SENSOR = True #debug messages for the lowlevel sensors True or False
+DEBUG_RADIO  = True #debug messages for the lowlevel radio True or False
 TIMEOUT_MAX = 100 ### interval length for advertising timeout
-TRANSMISSION_Period = 1
-DEBUG_ADVERT = False #debug messages for the advertising packet
+
+### data file being writte top
+DATA_FILE = "fullBLE5.csv"
+DATA_ARR = []
 
 ## our wireless channel class
 
@@ -70,14 +78,13 @@ class Node(object):
     def receive(self, msg):
         if ((msg[3] == 0) or (msg[3] == self.id)) :
             if self.id == msg[2]:
-                print("packet cant be sent to itself ignoring")
                 return None
             if (DEBUG_RADIO):
                 print(self.env.now,':',"Packet Received!")
             return(msg[4])
 
 class CentralNode(Node):
-    def __init__(self, env, media, id, posx, posy):
+    def __init__(self, env, media, id, posx, posy, timer=None):
         super().__init__(env, media, id, posx, posy)
         print(self.env.now, ':', self.id, posx, posy)
         self.gapData = Central('Heart Central 1', self.id, 'general')
@@ -86,21 +93,39 @@ class CentralNode(Node):
         self.advData = None
         self.gattData = Server()
         self.alarm = Alarm("hr-alarm")
+        
+        if ENABLE_GUI:
+            self.timer = timer
     
     def main_p(self):
         while True:
             yield self.env.timeout(randint(500, 1000))
             self.channel = 7
-            print(self.env.now,':', self.id ,' central node, waiting for messages')
+            if DEBUG_RADIO:
+                print(self.env.now,':', self.id ,' central node, waiting for messages')
+            elif ENABLE_GUI:
+                curr_time = time.time()
+                curr = [curr_time-self.timer, "node_state", str(self.env.now),str(self.id), "Central node, waiting for messages"]
+                DATA_ARR.append(curr)
             if self.advertReqConn:
                 connectPkt = self.gapData.createResponsePacket('CONNECT', self.channel, 
                             self.advData['SRC'], self.sqnr,None, self.advData['SRC'])
                 payload = connectPkt.payload
                 msg_str = json.dumps(payload)
+                if ENABLE_GUI:
+                    curr_time = time.time()
+                    curr = [curr_time-self.timer, "pkt_transfer", str(self.env.now),str(self.id), "Send", str(connectPkt.payload)]
+                    DATA_ARR.append(curr)
                 self.send(payload['LDST'],msg_str)
                 
+                
             else:
-                print("Central Node Waiting for advertising packet")
+                if DEBUG_RADIO:
+                    print("Central Node Waiting for advertising packet")
+                elif ENABLE_GUI:
+                    curr_time = time.time()
+                    curr = [curr_time-self.timer, "node_state", str(self.env.now),str(self.id), "Central node, waiting for messages"]
+                    DATA_ARR.append(curr)
                 
     def receive_p(self):
         while True:
@@ -108,11 +133,24 @@ class CentralNode(Node):
             msg_str = self.receive(msg)
             if msg_str:
                 msg_str = json.loads(msg_str)
-                print(self.env.now,':', self.id ,' central node, receiving ' , msg_str, "received by central!")
+                if ENABLE_GUI:
+                    curr_time = time.time()
+                    curr = [curr_time-self.timer, "pkt_transfer", str(self.env.now),str(self.id), "Receive", str(msg_str)]
+                    DATA_ARR.append(curr)
+                elif DEBUG_RADIO:
+                    print(self.env.now,':', self.id ,' central node, receiving ' , msg_str, "received by central!")
                 if msg_str['TYPE'] == 'advertisingPkt':
                     self.advData = msg_str
                     self.advertReqConn = True
+                    if ENABLE_GUI:
+                        curr_time = time.time()
+                        curr = [curr_time-self.timer, "node_state", str(self.env.now), str(self.id), "Reading data from advertising pkt"]
+                        DATA_ARR.append(curr)
                 elif msg_str['TYPE'] == 'GATT':
+                    if ENABLE_GUI:
+                        curr_time = time.time()
+                        curr = [curr_time-self.timer, "node_state", str(self.env.now), str(self.id), "Adding -> {} to profile".format(msg_str['DATA'])]
+                        DATA_ARR.append(curr)
                     self.advertReqConn = False
                     self.gattData.addToProfile(msg_str['DATA'])
                     recvPkt = self.gapData.createResponsePacket('RECEIVE', self.channel, 
@@ -128,20 +166,43 @@ class CentralNode(Node):
                         curAtt = self.gattData.getCharValAtt(uuids[index])
                         if curAtt.permissions.write or curAtt.permissions.readAndWrite:
                             curAtt.setValue(values[index])
-                            print("WRITING VALUE ", values[index], "to ", uuids[index])
+                            if DEBUG_RADIO:
+                                print("WRITING VALUE ", values[index], "to ", uuids[index])
+                            elif ENABLE_GUI:
+                                curr_time = time.time()
+                                curr = [curr_time-self.timer, "node_state", str(self.env.now),str(self.id), "Writing value {} to {}".format(values[index], uuids[index])]
+                                DATA_ARR.append(curr)
                             if uuids[index] == "0x0015":
                                 hrAtt = self.gattData.getCharValAtt("0x0015")
                                 hrVal = hrAtt.value
                                 self.alarm.checkHR(hrVal)
-                                print(self.alarm)
-                                
+                                if DEBUG_RADIO:
+                                    print(self.alarm)
+                                elif ENABLE_GUI:
+                                    status = self.alarm.__str__()
+                                    curr_time = time.time()
+                                    curr = [curr_time-self.timer, "node_state", str(self.env.now),str(self.id), "alarm status: {}".format(status)]
+                                    DATA_ARR.append(curr)
                         else:
-                            print("UNABLE TO WRITE, INVALID PERMISSIONS...")
+                            if DEBUG_RADIO:
+                                print("UNABLE TO WRITE, INVALID PERMISSIONS...")
+                                
+                            elif ENABLE_GUI:
+                                  curr_time = time.time()
+                                  curr = [curr_time-self.timer, "node_state", str(self.env.now),str(self.id), "Unable to write to profile, invalid permissions..."]
+                                  DATA_ARR.append(curr)
+                                
             else:
-                print("NO PACKETS RECEIVED AT CENTRAL NODE")
+                if DEBUG_RADIO:
+                    print("NO PACKETS RECEIVED AT CENTRAL NODE")
+                elif ENABLE_GUI:
+                    curr_time = time.time()
+                    curr = [curr_time-self.timer, "node_state", str(self.env.now),str(self.id), "No packets received at central node"]
+                    DATA_ARR.append(curr)
+                    
             
 class PeripheralNode(Node):
-    def __init__(self, env, media, id, posx, posy):
+    def __init__(self, env, media, id, posx, posy, timer=None):
         super().__init__(env, media, id, posx, posy)
         name = 'Heart Moniter1'
         self.join_node = 0
@@ -162,6 +223,9 @@ class PeripheralNode(Node):
         self.packaged = False
         self.channel = 7
         
+        if ENABLE_GUI:
+            self.timer = timer
+        
         
     def main_p(self):
         while True:
@@ -170,8 +234,11 @@ class PeripheralNode(Node):
                 self.sqnr = 0
                 msg = self.gapData.ADVPacket.payload
                 msg_json = json.dumps( msg ) 
-                if (DEBUG_ADVERT):
-                    print(self.env.now,':', self.id ,' sending advertisingPkt ' , msg_json)
+                if ENABLE_GUI:
+                    curr_time = time.time()
+                    curr = [curr_time - self.timer, "pkt_transfer", str(self.env.now),str(self.id), "Send", str(msg)]
+                    DATA_ARR.append(curr)
+                    
                 self.send(msg['LDST'], msg_json)
             else:
                 ### start sending ATT packets
@@ -188,12 +255,21 @@ class PeripheralNode(Node):
                             msg = attPkt.payload
                             msg_json = json.dumps(msg)
                             self.packaged = True
+                    
+                        if ENABLE_GUI:
+                            curr_time = time.time()
+                            curr = [curr_time-self.timer, "pkt_transfer", str(self.env.now),str(self.id), "Send", str(msg)]
+                            DATA_ARR.append(curr)
                         self.send(msg['LDST'],msg_json) 
+                        
                     except IndexError:
                         self.profileSent = True
-                        print("finished sending profile to central!")
+                        curr_time = time.time()
+                        curr = [curr_time-self.timer, "node_state", str(self.env.now),str(self.id), "Completed profile transfer to central node"]
+                        DATA_ARR.append(curr)
                 else:
-                    print("sending heart rate data...")
+                    if DEBUG_RADIO:
+                        print("sending heart rate data...")
                     ### hardcoding uuid of hr attribute
                     ### as this would be known to the peripheral anyway
                     ### see gat_client.py for uuids and handlers of attributes
@@ -202,6 +278,10 @@ class PeripheralNode(Node):
                                                         self.sqnr, data, self.channel)
                     msg = attPkt.payload
                     msg_json = json.dumps(msg)
+                    if ENABLE_GUI:
+                        curr_time = time.time()
+                        curr = [curr_time-self.timer, "pkt_transfer", str(self.env.now),str(self.id), "Send", str(msg)]
+                        DATA_ARR.append(curr)
                     self.send(msg['LDST'],msg_json) 
     
     def receive_p(self):
@@ -209,40 +289,58 @@ class PeripheralNode(Node):
             msg = yield self.media_in.get()
             msg_str = self.receive(msg)
             if msg_str:
-                print(self.env.now,':', self.id ,' receiving ' , msg_str, "received by peripheral!")
+                if DEBUG_RADIO:
+                    print(self.env.now,':', self.id ,' receiving ' , msg_str, "received by peripheral!")
+                elif ENABLE_GUI:
+                    curr_time = time.time()
+                    curr = [curr_time-self.timer, "pkt_transfer", str(self.env.now),str(self.id), "Receive", str(msg_str)]
+                    DATA_ARR.append(curr)
                 msg_json = json.loads(msg_str)
                 if msg_json['TYPE'] == 'CONNECT':
-                    print("PERIPHERAL CONNECTED to central")
+                    if ENABLE_GUI:
+                        curr_time = time.time()
+                        curr = [curr_time-self.timer, "node_state", str(self.env.now),str(self.id), "Connected to central node"]
+                        DATA_ARR.append(curr)
                     self.connected = True
                     if self.join_node == 0:
-                        print(self.env.now,':', self.id ,' connect req received to join on channel ' , msg_json['CHANNEL'])	
+                        if DEBUG_RADIO:
+                            print(self.env.now,':', self.id ,' connect req received to join on channel ' , msg_json['CHANNEL'])	
                         self.channel = msg_json['CHANNEL']	
-                        print("TWO NODES NOW CONNECTED")
                     else:
-                        print(self.env.now,':', self.id ,' advert received but already joined a sink ')
+                        if DEBUG_RADIO:
+                            print(self.env.now,':', self.id ,' advert received but already joined a sink ')
                 elif msg_json['TYPE'] == 'RECEIVE':
                     self.gattPos += 1
                     self.packaged = False
                     if self.gattPos > len(self.gattPkts):
-                        print("SENDING HEARTRATE DATA")
+                        if DEBUG_RADIO:
+                            print("SENDING HEARTRATE DATA")
                 else:
-                    print("AWAITING CONNECTION REQUEST OR GATT PKT")
-# Start of main program
-# Initialisation of the random generator
+                    if DEBUG_RADIO:
+                        print("AWAITING CONNECTION REQUEST OR GATT PKT")
+                    elif ENABLE_GUI:
+                        curr_time = time.time()
+                        curr = [curr_time-self.timer, "node_state", str(self.env.now),str(self.id), "Awaiting connection request or GATT packet"]
+                        DATA_ARR.append(curr)
+                        
+
+start_time = time.time()
 seed(datetime.now())
-
-# Setup of the simulation environment
-# factor=0.01 means that one simulation time unit is equal to 0.01 seconds
-#env = simpy.Environment()
 env = simpy.rt.RealtimeEnvironment(factor=0.01)
-
-# the communication medium 
 media = Media(env)
-
-# Nodes placed in a 2 dimensional space
-# Node(env, media, node_id, position_x, position_y)
-CentralNode(env,media,1,1,0)
-PeripheralNode(env,media,2,0,1)
-
+CentralNode(env,media,1,1,0, start_time)
+PeripheralNode(env,media,2,0,1, start_time)
 # Duration of the experiment
 env.run(until=16000)
+
+if ENABLE_GUI:
+    outputFile = "{}.csv".format("fullBLE5")
+    with open(outputFile, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(DATA_ARR)
+    shutil.move(outputFile, "{}/simulations/{}".format(os.getcwd(), outputFile))
+
+# outputFile = "{}.csv".format("fullBLE5")
+# print(outputFile)
+# print({os.getcwd()+'/'+outputFile})
+# print({os.getcwd()+'/simulations/'+outputFile})
