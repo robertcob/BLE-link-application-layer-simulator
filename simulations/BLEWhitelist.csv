@@ -1,0 +1,8 @@
+5.4404284954071045,pkt_transfer,544,2,Send,"{'TYPE': 'advertisingPkt', 'SRC': 2, 'DST': 0, 'LSRC': 2, 'LDST': 0, 'SEQ': 0, 'DATA': 'Attack Sensor', 'CHANNEL': None}"
+5.440912246704102,pkt_transfer,544,1,Receive,"{'TYPE': 'advertisingPkt', 'SRC': 2, 'DST': 0, 'LSRC': 2, 'LDST': 0, 'SEQ': 0, 'DATA': 'Attack Sensor', 'CHANNEL': None}"
+5.440936326980591,node_state,544,1,Reading data from advertising pkt
+12.016760349273682,pkt_transfer,1201,1,Send,"{'TYPE': 'TERMINATE', 'SRC': 7, 'DST': 0, 'LSRC': 7, 'LDST': 2, 'SEQ': 0, 'DATA': None, 'CHANNEL': None}"
+12.017013311386108,node_state,1201,2,Terminating connection with central node
+14.272517919540405,pkt_transfer,1427,2,Send,"{'TYPE': 'advertisingPkt', 'SRC': 2, 'DST': 0, 'LSRC': 2, 'LDST': 0, 'SEQ': 0, 'DATA': 'Attack Sensor', 'CHANNEL': None}"
+14.272945165634155,pkt_transfer,1427,1,Receive,"{'TYPE': 'advertisingPkt', 'SRC': 2, 'DST': 0, 'LSRC': 2, 'LDST': 0, 'SEQ': 0, 'DATA': 'Attack Sensor', 'CHANNEL': None}"
+14.272976398468018,node_state,1427,1,Reading data from advertising pkt

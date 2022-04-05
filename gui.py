@@ -20,13 +20,27 @@ CURRENT_SIMULATION = "random value"
 #### Attack Model Selection Menu...
 def initNoAttackSim():
     global CURRENT_SIMULATION
-    #print("creating sim of ble 5, no attacker")
     CURRENT_SIMULATION = "simulations/fullBLE5.csv"
     print("executing {}".format(CURRENT_SIMULATION))
+    
 
-def initFalseSensorAttackSim():
-    print("creating false sensor attack simulation")
+def initWhitelistSim():
+    global CURRENT_SIMULATION
+    CURRENT_SIMULATION = "simulations/BLEWhitelist.csv"
+    print("executing {}".format(CURRENT_SIMULATION))
+    
 
+def initRangeAttackSim():
+    global CURRENT_SIMULATION
+    CURRENT_SIMULATION = "simulations/BLEWhitelist.csv"
+    print("executing {}".format(CURRENT_SIMULATION))
+    
+
+def initSTKSim():
+    global CURRENT_SIMULATION
+    CURRENT_SIMULATION = "simulations/fullBLE5.csv"
+    print("executing {}".format(CURRENT_SIMULATION))
+    
 
 menu = Menu(root)
 root.config(menu=menu)
@@ -35,12 +49,16 @@ menu.add_cascade(label="Attack Models", menu=subMenu)
 
 sec0SubMenu = Menu(subMenu)
 sec1SubMenu = Menu(subMenu)
+sec2SubMenu = Menu(subMenu)
 
 subMenu.add_cascade(label="Security Level 0", menu=sec0SubMenu)
 subMenu.add_cascade(label="Security Level 1", menu=sec1SubMenu)
+subMenu.add_cascade(label="Security Level 2", menu=sec2SubMenu)
 
 sec0SubMenu.add_command(label="no attacks", command=initNoAttackSim)
-sec0SubMenu.add_command(label="false sensor", command=initFalseSensorAttackSim)
+sec1SubMenu.add_command(label="whitelists", command=initWhitelistSim)
+sec1SubMenu.add_command(label="sensor-flood", command=initWhitelistSim)
+sec2SubMenu.add_command(label="STK", command=initSTKSim)
 
 ### importing image assets
 masterFrame =Frame(root)
@@ -192,48 +210,20 @@ def start():
     t2 = threading.Thread(target=runSim, args=[])
     t1.start()
     t2.start()
-    
-# def stop():
-#     t2._stop()
-# def reset():
-#     print("reset clicked!")
-#     tv1.delete(*tv1.get_children())
-#     tv2.delete(*tv2.get_children())
-#     return
 
 
 ### simulation control frame
 rootFrame= Frame(sideContentFrame)
 rootFrame.grid(row=2)
 topFrame = Frame(rootFrame, bg="grey", width=380, height=60)
-# bottomframe = Frame(rootFrame, bg="grey", width= 380, height=60)
 topFrame.grid(row=0)
-# bottomframe.grid(row=1, pady=26)
+
 
 topInnerFrame1 = Frame(topFrame,  width=126, height=60)
-# topInnerFrame2 = Frame(topFrame,  width=126, height=60)
-# topInnerFrame3 = Frame(topFrame, width=126, height=60)
 topInnerFrame1.grid(row=0, column=0)
-# topInnerFrame2.grid(row=0, column=1)
-# topInnerFrame3.grid(row=0,column=2)
 
 startbutton = Button(topInnerFrame1, text="Start", fg="black", bg="grey", command=start)
 
 startbutton.grid(padx=23, pady=5)
-
-# stopbutton = Button(topInnerFrame2, text="Stop", fg="black", bg="grey", command=stop)
-
-# stopbutton.grid(padx=22, pady=5)
-
-# resetButton = Button(topInnerFrame3, text="Reset", fg="black", bg="grey", command=reset)
-
-# resetButton.grid(padx=23, pady=5)
-
-# timeVar = StringVar()
-# timeVar.set("0.00")
-# timeLabel = Label(bottomframe, fg="black",  text= "Time:", font="10")
-# vartimeLabel = Label(bottomframe, fg="black", textvariable=timeVar, font="10")
-# timeLabel.grid(row= 0,column=0)
-# vartimeLabel.grid(row=0, column=1)
 
 root.mainloop()
