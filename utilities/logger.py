@@ -1,16 +1,18 @@
-class Log():
-    def __init__(self, time, sensor_id, message):
-        self.time = time
-        self.sensor_id = sensor_id
-        self.message = message
-    
+import csv
+import shutil
+import os
 
-class LogTracker():
-    def __init__(self):
-        self.logs = []
+class Log():
+    def __init__(self, sim_Name, data):
+        self.name = sim_Name
+        self.data = data
     
-    def addLog(self, newLog):
-        self.logs.append(newLog)
+    def write(self):
+        outputFile = "{}.csv".format(self.name)
+        with open(outputFile, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(self.data)
+        shutil.move(outputFile, "{}/simulations/{}".format(os.getcwd(), outputFile))
+        
+
     
-    def getLogs(self):
-        return self.logs

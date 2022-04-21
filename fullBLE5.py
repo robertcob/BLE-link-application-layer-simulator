@@ -15,77 +15,28 @@ from GAT.gat_client import Client
 from GAT.gat_server import Server
 import simpy.rt
 from utilities.rand import randomHeartRateValue
+from utilities.logger import Log
 import json
 from application.alarm import Alarm
-
-### simulation tracking imports
-import csv
+from controller.media import Media
+from controller.node import Node
 import time
-import shutil
-import os
+
 
 ### GUI flag only use when working
 ### alongside GUI
 ### disable if not using GUI
-ENABLE_GUI = False
-RADIO_CHANNEL	 = 37  # selected transmission channel
+ENABLE_GUI = True
+RADIO_CHANNEL = 37  # selected transmission channel
 DEBUG_RADIO  = True #debug messages for the lowlevel radio True or False
 TIMEOUT_MAX = 100 ### interval length for advertising timeout
 
 ### data file being writte top
-DATA_FILE = "fullBLE5.csv"
 DATA_ARR = []
 
-## our wireless channel class
-
-class Media(object):
-    def __init__(self, env, capacity=simpy.core.Infinity):
-        self.env = env
-        self.capacity = capacity
-        self.pipes = []
-    
-    def put(self, value):
-        if not self.pipes:
-            raise RuntimeError('There are no pipes')
-        events = [store.put(value) for store in self.pipes]
-        return self.env.all_of(events)
-    
-    def get_output_conn(self):
-        pipe = simpy.Store(self.env, capacity=self.capacity)
-        self.pipes.append(pipe)
-        return pipe
-    
-### the abstracted node for physical layer of out central and peripheral
-class Node(object):
-    def __init__(self, env, media, id, posx, posy):
-        self.env = env
-        self.media_in = media.get_output_conn()
-        self.media_out = media
-        self.channel = RADIO_CHANNEL
-        self.id = id
-        self.posx= posx
-        self.posy = posy
-        self.sqnr = 0
-        env.process(self.main_p())
-        env.process(self.receive_p())
-        
-    def send(self, ldst, msg_str):
-        if DEBUG_RADIO:
-            print(self.env.now,':', self.id,' -> ', ldst)
-        msg = (self, self.channel, self.id, ldst, str(msg_str))
-        self.media_out.put(msg)
-
-    def receive(self, msg):
-        if ((msg[3] == 0) or (msg[3] == self.id)) :
-            if self.id == msg[2]:
-                return None
-            if (DEBUG_RADIO):
-                print(self.env.now,':',"Packet Received!")
-            return(msg[4])
-
 class CentralNode(Node):
-    def __init__(self, env, media, id, posx, posy, timer=None):
-        super().__init__(env, media, id, posx, posy)
+    def __init__(self, env, media, id, posx, posy, RADIO_CHANNEL, DEBUG_RADIO, timer=None):
+        super().__init__(env, media, id, posx, posy, DEBUG_RADIO, RADIO_CHANNEL)
         print(self.env.now, ':', self.id, posx, posy)
         self.gapData = Central('Heart Central 1', self.id, 'general')
         self.advertReqConn = False
@@ -93,6 +44,8 @@ class CentralNode(Node):
         self.advData = None
         self.gattData = Server()
         self.alarm = Alarm("hr-alarm")
+        self.DEBUG_RADIO = DEBUG_RADIO
+        self.RADIO_CHANNEL = RADIO_CHANNEL
         
         if ENABLE_GUI:
             self.timer = timer
@@ -202,8 +155,8 @@ class CentralNode(Node):
                     
             
 class PeripheralNode(Node):
-    def __init__(self, env, media, id, posx, posy, timer=None):
-        super().__init__(env, media, id, posx, posy)
+    def __init__(self, env, media, id, posx, posy, RADIO_CHANNEL, DEBUG_RADIO, timer=None):
+        super().__init__(env, media, id, posx, posy, RADIO_CHANNEL, DEBUG_RADIO)
         name = 'Heart Moniter1'
         self.join_node = 0
         print(self.env.now,':', self.id ,' Peripheral node, waiting for messages')
@@ -212,6 +165,8 @@ class PeripheralNode(Node):
         newAdVPKT = self.gapData.createAdvertismentPackets(self.id, self.join_node, self.sqnr, None)
         self.gapData.addPackets(newAdVPKT)
         self.connected = False
+        self.DEBUG_RADIO = DEBUG_RADIO
+        self.RADIO_CHANNEL = RADIO_CHANNEL
         
         ### state variable to check if all profile packets
         ### have been send, is triggered based on 
@@ -222,9 +177,7 @@ class PeripheralNode(Node):
         self.gattPos = 0
         self.packaged = False
         self.channel = 7
-        
-        if ENABLE_GUI:
-            self.timer = timer
+        self.timer = timer
         
         
     def main_p(self):
@@ -328,19 +281,12 @@ start_time = time.time()
 seed(datetime.now())
 env = simpy.rt.RealtimeEnvironment(factor=0.01)
 media = Media(env)
-CentralNode(env,media,1,1,0, start_time)
-PeripheralNode(env,media,2,0,1, start_time)
+CentralNode(env,media,1,1,0, RADIO_CHANNEL, DEBUG_RADIO, start_time)
+PeripheralNode(env,media,2,0,1, RADIO_CHANNEL, DEBUG_RADIO, start_time)
 # Duration of the experiment
 env.run(until=16000)
 
 if ENABLE_GUI:
     outputFile = "{}.csv".format("fullBLE5")
-    with open(outputFile, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerows(DATA_ARR)
-    shutil.move(outputFile, "{}/simulations/{}".format(os.getcwd(), outputFile))
-
-# outputFile = "{}.csv".format("fullBLE5")
-# print(outputFile)
-# print({os.getcwd()+'/'+outputFile})
-# print({os.getcwd()+'/simulations/'+outputFile})
+    logger = Log(outputFile, DATA_ARR)
+    logger.write()
