@@ -8,7 +8,6 @@ class Server:
         self.curServiceId = None
     
     def addToProfile(self, data):
-        print("DEBUG3", data)
         currAtt = Attribute(data['pktUUID'], data['handle'], data['value'])
         if data['type'] == 'serviceDec':
             currAtt.createAttPerms(True, False, False)

@@ -31,6 +31,6 @@ class peripheralData:
         self.uuid = uuid
         self.other = other
     
-    def setOtherData(self, newOther):
-        self.other = newOther
+    def setOtherData(self, extendedData):
+        self.other = extendedData
     

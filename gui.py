@@ -14,7 +14,7 @@ ff10=Font(family="Consolas", size=10)
 ff10b=Font(family="Consolas", size=10, weight=BOLD)
 
 
-CURRENT_SIMULATION = "random value"
+CURRENT_SIMULATION = "simulations/fullBLE5.csv"
 
 #### Attack Model Selection Menu...
 def initNoAttackSim():
@@ -29,18 +29,6 @@ def initWhitelistSim():
     print("executing {}".format(CURRENT_SIMULATION))
     
 
-def initRangeAttackSim():
-    global CURRENT_SIMULATION
-    CURRENT_SIMULATION = "simulations/BLEWhitelist.csv"
-    print("executing {}".format(CURRENT_SIMULATION))
-    
-
-def initSTKSim():
-    global CURRENT_SIMULATION
-    CURRENT_SIMULATION = "simulations/fullBLE5.csv"
-    print("executing {}".format(CURRENT_SIMULATION))
-    
-
 menu = Menu(root)
 root.config(menu=menu)
 subMenu = Menu(menu)
@@ -52,12 +40,10 @@ sec2SubMenu = Menu(subMenu)
 
 subMenu.add_cascade(label="Security Level 0", menu=sec0SubMenu)
 subMenu.add_cascade(label="Security Level 1", menu=sec1SubMenu)
-subMenu.add_cascade(label="Security Level 2", menu=sec2SubMenu)
 
 sec0SubMenu.add_command(label="no attacks", command=initNoAttackSim)
 sec1SubMenu.add_command(label="whitelists", command=initWhitelistSim)
-sec1SubMenu.add_command(label="sensor-flood", command=initWhitelistSim)
-sec2SubMenu.add_command(label="STK", command=initSTKSim)
+
 
 ### importing image assets
 masterFrame =Frame(root)
