@@ -44,7 +44,7 @@ First extract the zipped file as provided
 Navigate to the extracted folder. 
 
 You should see the following files:
-[![Filestructure](https://ibb.co/vdJVydW)]
+<a href="https://imgbb.com/"><img src="https://i.ibb.co/fNCq6NW/filestructure.png" alt="filestructure" border="0"></a>
 etc..
 
 You will need to use pip to install all python requiremeints
