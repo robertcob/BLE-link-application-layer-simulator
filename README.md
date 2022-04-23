@@ -43,9 +43,9 @@ The installation assumes that:
 First extract the zipped file as provided
 Navigate to the extracted folder. 
 
-You should see the following files:
+You should see the following files
 <a href="https://imgbb.com/"><img src="https://i.ibb.co/fNCq6NW/filestructure.png" alt="filestructure" border="0"></a>
-etc..
+
 
 You will need to use pip to install all python requiremeints
 The command to do this is simply _pip install -r requirements.txt_
