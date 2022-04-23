@@ -7,7 +7,6 @@ This repository is part of the Final Year Project Module of the Computer Science
 
 <summary><h3 style="display: inline-block">Table of Contents</h3></summary>
   <ol>
-    <li><a href="#abstract">Abstract</a></li>
     <li><a href="#authors">Authors</a></li>
     <li><a href="#built-with">Built With</a></li>
     <li><a href="#user-guide">User Guide</a>
@@ -19,18 +18,6 @@ This repository is part of the Final Year Project Module of the Computer Science
   </ol>
 
 ___________________
-
-### Abstract
-
-Secure Live-Boot Linux Environment For Bitcoin Paper Wallet Generation
-
-This app creates a live bootable USB linux distribution. When booted shows a simplstic one-app system, completely air-gapped with no networking intefaces
-and no desktop environment. A simplistic UI created using Pythons frontend framework Kivi will help the user create/restore a valid bitcoin wallet in the 
-simplest and easiest way possible, while being completely secure at the same time.
-
-- **NOTE:** Unfortunately our custom Linux distribution is not ready for deployment as the scope of our project was too large. So we are releasing the application as a standalone Windows app. 
-  It all works as intended, same as the other Paper Wallet Generators out there, it's just the superb security aspect of our project that's lacking.
-
 ### Author
 - Robert O'Brien
 
@@ -60,15 +47,24 @@ You should see the following files:
 
 .
 ├── application
+
 ├── ATT
+
 │   └── packets
 ├── controller
+
 ├── GAP
+
 ├── GAT
+
 ├── guiExtensions
+
 ├── image-assets
+
 ├── simulations
+
 └── utilities
+
 etc..
 
 You will need to use pip to install all python requiremeints
