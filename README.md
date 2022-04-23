@@ -44,27 +44,7 @@ First extract the zipped file as provided
 Navigate to the extracted folder. 
 
 You should see the following files:
-
-.
-├── application
-
-├── ATT
-
-│   └── packets
-├── controller
-
-├── GAP
-
-├── GAT
-
-├── guiExtensions
-
-├── image-assets
-
-├── simulations
-
-└── utilities
-
+[![Filestructure](https://ibb.co/vdJVydW)]
 etc..
 
 You will need to use pip to install all python requiremeints
